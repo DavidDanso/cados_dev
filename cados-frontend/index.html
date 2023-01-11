@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en" class="js has-scroll-init has-scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="More than a Doc..." />
+    <meta name="keywords" content="Cados Advocates App" />
+    <meta name="author" content="the_desiinger" />
+    <link rel="icon" href="assets/images/favicon.svg" />
+    <title>Home Page</title>
+
+    <!-- Preload CSS -->
+    <link rel="preload" as="style" href="assets/styles/css/main.css" />
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="assets/styles/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="assets/styles/css/main.css" />
+    <link
+      href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.2/TweenMax.min.js"></script>
+
+    <script>
+      document.documentElement.className = "js";
+      var supportsCssVars = function () {
+        var e,
+          t = document.createElement("style");
+        return (
+          (t.innerHTML = "root: { --tmp-var: bold; }"),
+          document.head.appendChild(t),
+          (e = !!(
+            window.CSS &&
+            window.CSS.supports &&
+            window.CSS.supports("font-weight", "var(--tmp-var)")
+          )),
+          t.parentNode.removeChild(t),
+          e
+        );
+      };
+      supportsCssVars() ||
+        alert(
+          "Please view this work in a modern browser that supports CSS Variables."
+        );
+    </script>
+  </head>
+  <body
+    id="pageTop"
+    class="page-content"
+    data-spy="scroll"
+    data-target="#mainNav"
+  >
+    <!--======================== Main-Section ================================-->
+    <main>
+      <!--=========================================== smooth-scroll-effect ===============================-->
+      <div data-scroll class="page page--layout-2" id="main">
+        <div class="content content--full content--alternate"></div>
+        <!-- End content -->
+
+        <!-- Return to Top -->
+        <a href="#" id="return-to-top"><i class="icon-chevron-up"></i></a>
+        <!--=========================================== Hero-Text ===============================-->
+        <div id="hero">
+          <div class="container-fluid">
+            <div class="hero-intro">
+              <div id="header">
+                <h1>
+                  <img
+                    id="logo"
+                    src="assets/images/favicon.svg"
+                    class="img-fluid"
+                    alt="logo"
+                  />
+                  <span>Cados.Dev</span>
+                </h1>
+
+                <p data-bs-toggle="modal" data-bs-target="#modalMessage">
+                  <span>click me</span>
+                </p>
+
+                <a
+                  href="#add_advocate"
+                  data-bs-toggle="modal"
+                  data-bs-target="#staticBackdrop"
+                  >Add Account👤</a
+                >
+              </div>
+              <!-- End header -->
+
+              <hr />
+              <h2>
+                Search <span id="advocatesNum"></span> developer accounts found
+                by <span>@desiinger's</span>
+                webscraper and the TwitterAPI:)
+              </h2>
+
+              <h6 id="qNum"></h6>
+
+              <div id="search-form">
+                <form class="row gy-2 gx-3 align-items-center" id="form">
+                  <div class="col-auto">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="inputFeild__"
+                      name="query"
+                      placeholder="search advocates..."
+                    />
+                  </div>
+
+                  <div class="col-auto">
+                    <input
+                      type="submit"
+                      class="btn btn-button"
+                      value="Submit"
+                    />
+                  </div>
+                </form>
+                <!-- End form-->
+              </div>
+              <!-- End search-form-->
+
+              <div id="loading">Loading...</div>
+              <!--End loading-->
+
+              <div id="advocates-wrapper">
+                <div class="row" id="wrapper-row"></div>
+                <!-- End wrapper-row-->
+              </div>
+              <!-- End advocates-wrapper-->
+            </div>
+            <!-- End hero-intro-->
+          </div>
+          <!-- End container-fluid -->
+        </div>
+        <!-- End hero -->
+
+        <!--=========================================== Modal--layout ===============================-->
+        <div
+          class="modal fade"
+          id="staticBackdrop"
+          data-bs-backdrop="static"
+          data-bs-keyboard="false"
+          tabindex="-1"
+          aria-labelledby="staticBackdropLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="staticBackdropLabel">
+                  Add new Dev Account
+                </h5>
+                <img
+                  id="close_svg"
+                  src="assets/images/close.svg"
+                  class="img-fluid"
+                  alt="close_svg"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                />
+              </div>
+              <!-- End Modal--header -->
+              <div class="modal-body">
+                <h6>
+                  Can't find an a specific dev account? No problem, enter the
+                  correct developer twitter username.
+                </h6>
+                <center>
+                  <img
+                    id="advocate_svg"
+                    src="assets/images/advocate.png"
+                    class="img-fluid"
+                    alt="advocate_svg"
+                  />
+                </center>
+
+                <div id="modal-wrapper">
+                  <form id="form">
+                    <div class="mb-3 row">
+                      <label for="inputUsername" class="col-sm-2 col-form-label"
+                        >Username:</label
+                      >
+                      <div class="col-sm-10">
+                        <input
+                          type="text"
+                          id="username"
+                          class="form-control"
+                          name="username"
+                        />
+                      </div>
+                      <!-- End form-col-->
+                    </div>
+                    <!-- End form-row-->
+
+                    <center>
+                      <input
+                        type="submit"
+                        class="btn btn-button"
+                        value="Add new Advocate"
+                        data-bs-dismiss="modal"
+                      />
+                    </center>
+                  </form>
+                  <!-- End form-->
+                </div>
+                <!-- End modal_wrapper-->
+              </div>
+              <!-- End Modal--body -->
+            </div>
+            <!-- End Modal--content -->
+          </div>
+          <!-- End Modal--dialog -->
+        </div>
+        <!-- End Modal--layout -->
+
+        <!--=========================================== Modal--Message ===============================-->
+        <div
+          class="modal fade"
+          id="modalMessage"
+          data-bs-backdrop="static"
+          data-bs-keyboard="false"
+          tabindex="-1"
+          aria-labelledby="modalMessageLabel"
+          aria-hidden="true"
+        >
+          <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="modalMessageLabel">
+                  <span>still in beta</span>
+                </h5>
+                <button
+                  type="button"
+                  class="btn-close"
+                  data-bs-dismiss="modal"
+                  aria-label="Close"
+                ></button>
+              </div>
+              <div class="modal-body">
+                <img
+                  id="bird_img"
+                  src="assets/images/rubber-chicken-800x400.v1.3a2d1b19.png"
+                  class="img-fluid"
+                  alt="bird_img"
+                />
+                <p>
+                  Thank you for using the cados app! We're excited to announce
+                  that we are currently testing a new feature that will improve
+                  the
+                  <mark
+                    >loading experience once a new developer username is
+                    added</mark
+                  >, which we think you'll love. Thank you for your patience and
+                  understanding as we work to bring you the best possible
+                  experience. We can't wait to share the final version with
+                  you!🫶🏽
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- End Modal--message -->
+      </div>
+      <!-- End page--layout -->
+    </main>
+    <!-- End Main-Section -->
+
+    <!--=============================================== JavaScript ===================================-->
+    <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.0/gsap.min.js"></script>
+    <!-- unpkg -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/2.1.3/TweenMax.min.js"></script>
+    <!-- Custom Links -->
+    <script src="assets/styles/js/jquery-min.js"></script>
+    <script src="assets/styles/js/bootstrap.min.js"></script>
+    <script src="assets/styles/js/main.js"></script>
+  </body>
+</html>
