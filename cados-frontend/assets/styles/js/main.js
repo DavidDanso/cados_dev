@@ -1,163 +1,160 @@
-// storing variable names
-let form = document.getElementById("search-form");
-let qNum = document.getElementById("qNum");
-let wrapper = document.getElementById("wrapper-row");
-let modal = document.getElementById("modal-wrapper");
-let advocatesNum = document.getElementById("advocatesNum");
-let url = "http://127.0.0.1:8000/advocates/";
-let loadingEl = document.getElementById("loading");
+// DOM Elements
+const form = document.getElementById("search-form");
+const qNum = document.getElementById("qNum");
+const wrapper = document.getElementById("wrapper-row");
+const modal = document.getElementById("modal-wrapper");
+const advocatesNum = document.getElementById("advocatesNum");
+const loadingEl = document.getElementById("loading");
+const BASE_URL = "http://127.0.0.1:1234/advocates/";
 
-// sending csrf token into our form to submit user data into the database
+// CSRF Token handling
 function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== "") {
-    let cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      let cookie = cookies[i].trim();
-      // Does this cookie string begin with the name we want?
-      if (cookie.substring(0, name.length + 1) === name + "=") {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
-  }
-  return cookieValue;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return decodeURIComponent(parts.pop().split(";").shift());
 }
-let csrftoken = getCookie("csrftoken");
 
-// function for all advocates
-let advocateList = (advocates) => {
-  for (var i = 0; i < advocates.length; i++) {
-    let name = `${advocates[i].name}`;
-    if (name == "null") {
-      // skip the current iteration of THE loop and move on to the next iteration if THE name is NULL
-      continue;
-    } else {
-      var list = `
-      <div class="col-md-4">
-        <div class="card">
-          <div class="card-body">
-            <div id="card-header">
-              <img
-                id="user_avatar"
-                src="${advocates[i].profile_pic}"
-                class="img-fluid rounded-circle"
-                alt="user_avatar"
-              />
-              <div id="user_details">
-                <h6>${advocates[i].name}</h6>
-                <a href="${advocates[i].twitter}">
-                  <small>@${advocates[i].username}</small>
-                </a>
-              </div>
-              <!-- End user_details-->
+const csrftoken = getCookie("csrftoken");
+
+// Advocate card template
+function createAdvocateCard(advocate) {
+  if (!advocate.name) return ""; // Skip if no name
+
+  return `
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div id="card-header">
+                        <img
+                            id="user_avatar"
+                            src="${advocate.profile_pic || "avatar-default.PNG"}"
+                            class="img-fluid rounded-circle"
+                            alt="${advocate.name}'s avatar"
+                            onerror="this.src='avatar-default.PNG'"
+                        />
+                        <div id="user_details">
+                            <h6>${advocate.name}</h6>
+                            ${
+                              advocate.twitter
+                                ? `<a href="${advocate.twitter}" target="_blank" rel="noopener noreferrer">
+                                    <small>@${advocate.username}</small>
+                                </a>`
+                                : "<small>No Twitter handle</small>"
+                            }
+                        </div>
+                    </div>
+                    <p>${advocate.bio || "No bio available"}</p>
+                </div>
             </div>
-            <!-- End card-header-->
-            <p>
-              ${advocates[i].bio}
-            </p>
-          </div>
-          <!-- End card-body-->
         </div>
-        <!-- End card-->
-      </div>
-      <!-- End col-->
     `;
-      wrapper.innerHTML += list;
-    }
-  }
-};
+}
 
+// Render advocate list
+function advocateList(advocates) {
+  wrapper.innerHTML = advocates
+    .map(createAdvocateCard)
+    .filter((card) => card) // Remove empty cards
+    .join("");
+}
+
+// Fetch advocates
 async function getAdvocates() {
-  // Show the loading message
   loadingEl.style.display = "block";
+  wrapper.innerHTML = "";
 
   try {
-    // Make the API call
-    const res = await fetch(url);
-    const data = await res.json();
-    const advocates = data.advocates;
-    const total_advocates = data.total;
+    const res = await fetch(BASE_URL);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-    // Clear the wrapper element and display the data
-    wrapper.innerHTML = "";
-    advocatesNum.innerHTML += total_advocates;
-    advocateList(advocates);
-    return data; // return the data so it can be used in the updatePagination function
+    const data = await res.json();
+    advocatesNum.textContent = data.total;
+    advocateList(data.advocates);
+    return data;
   } catch (error) {
-    console.error(error);
+    console.error("Error fetching advocates:", error);
+    wrapper.innerHTML = `<div class="alert alert-danger">Failed to load advocates. Please try again later.</div>`;
   } finally {
-    // Hide the loading message
     loadingEl.style.display = "none";
   }
 }
-// Call the getAdvocates function to make the API call
-getAdvocates();
 
-// send a GET request to the server with the search query in the URL
-form.addEventListener("submit", (e) => {
-  // prevent the form from being submitted
+// Search form handler
+form?.addEventListener("submit", async (e) => {
   e.preventDefault();
+  const query = e.target.query.value.trim();
+  const searchUrl = `${BASE_URL}?query=${encodeURIComponent(query)}`;
+
+  loadingEl.style.display = "block";
   wrapper.innerHTML = "";
   qNum.innerHTML = "";
-  let query = e.target.query.value;
-  let url = `http://127.0.0.1:8000/advocates/?query=${query}`;
-  fetch(url)
-    .then((res) => res.json()) // parse the response as JSON
-    .then((data) => {
-      // handle the search results here
-      let advocates = data.advocates;
-      let total_advocates = data.total;
-      advocateList(advocates);
-      if (query !== "") {
-        let queryNum = `
-        <h6>Your search for [ ${query} ], found ${total_advocates} Developer Advocate(s)</h6>
-      `;
-        qNum.innerHTML += queryNum;
-      }
-    });
-});
 
-// send a POST request to the server to create a new advocate
-modal.addEventListener("submit", (e) => {
-  e.preventDefault();
-  let username = document.getElementById("username").value;
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-type": "application/json",
-      "X-CSRFToken": csrftoken,
-    },
-    body: JSON.stringify({ username: username }),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      let twitterUsername = data.username;
-      return fetch(`http://127.0.0.1:8000/advocates/${twitterUsername}/`);
-    })
-    .then((response) => response.json())
-    .then((data) => {
-      // Do something with the data from the second fetch
-      console.log(data);
-      window.location.href = window.location.href;
-    });
-});
+  try {
+    const res = await fetch(searchUrl);
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
-// ===== Scroll to Top ====
-$(window).scroll(function () {
-  if ($(this).scrollTop() >= 50) {
-    // If page is scrolled more than 50px
-    $("#return-to-top").fadeIn(200); // Fade in the arrow
-  } else {
-    $("#return-to-top").fadeOut(200); // Else fade out the arrow
+    const data = await res.json();
+    advocateList(data.advocates);
+
+    if (query) {
+      qNum.innerHTML = `
+                <h6>Your search for [ ${query} ] found ${data.total} Developer Advocate(s)</h6>
+            `;
+    }
+  } catch (error) {
+    console.error("Error searching advocates:", error);
+    wrapper.innerHTML = `<div class="alert alert-danger">Search failed. Please try again later.</div>`;
+  } finally {
+    loadingEl.style.display = "none";
   }
 });
-$("#return-to-top").click(function () {
-  // When arrow is clicked
-  $("body,html").animate(
-    {
-      scrollTop: 0, // Scroll to top of body
-    },
-    500
-  );
+
+// Modal form handler
+modal?.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = document.getElementById("username")?.value.trim();
+  if (!username) return;
+
+  try {
+    // First API call to create advocate
+    const createRes = await fetch(BASE_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": csrftoken,
+      },
+      body: JSON.stringify({ username }),
+    });
+
+    if (!createRes.ok) throw new Error(`HTTP error! status: ${createRes.status}`);
+
+    const data = await createRes.json();
+
+    // Second API call to fetch advocate details
+    const fetchRes = await fetch(`${BASE_URL}${data.username}/`);
+    if (!fetchRes.ok) throw new Error(`HTTP error! status: ${fetchRes.status}`);
+
+    await fetchRes.json();
+    window.location.reload();
+  } catch (error) {
+    console.error("Error creating advocate:", error);
+    alert("Failed to create advocate. Please try again later.");
+  }
 });
+
+// Scroll to top functionality
+$(window).scroll(function () {
+  const returnToTop = $("#return-to-top");
+  if ($(this).scrollTop() >= 50) {
+    returnToTop.fadeIn(200);
+  } else {
+    returnToTop.fadeOut(200);
+  }
+});
+
+$("#return-to-top").click(function () {
+  $("body,html").animate({ scrollTop: 0 }, 500);
+});
+
+// Initial load
+document.addEventListener("DOMContentLoaded", getAdvocates);
